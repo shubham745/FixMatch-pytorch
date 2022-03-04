@@ -59,6 +59,13 @@ class NetworkBlock(nn.Module):
         self.layer = self._make_layer(
             block, in_planes, out_planes, nb_layers, stride, drop_rate, activate_before_residual)
 
+        if in_planes == 16:
+            self.tmd_layer = TMDLayer(
+                in_features = 32*32*in_planes, # input feature dimension(d)
+                L_latent = 16,       # latent dimension of tmd layer
+                epsilon = 0.25       # epsilon(hyperparameter)
+            )
+        self.in_planes = in_planes
 
 
     def _make_layer(self, block, in_planes, out_planes, nb_layers, stride, drop_rate, activate_before_residual):
@@ -69,6 +76,11 @@ class NetworkBlock(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
+        if self.in_planes == 16:
+            n,c,h,w = x.shape
+            x = x.view(2,n//2,-1)
+            x = self.tmd_layer(x)
+            x = x.view(n,c,h,w)
 
         return self.layer(x)
 
