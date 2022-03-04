@@ -132,7 +132,7 @@ class WideResNet(nn.Module):
         x = x.view(1,n,-1)
         out = self.tmd_layer(x)
         out = out.view(n,c,h,w)
-        out = self.conv1(x)
+        out = self.conv1(out)
 
         out = self.block1(out)
         out = self.block2(out)
