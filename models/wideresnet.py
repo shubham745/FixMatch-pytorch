@@ -3,6 +3,7 @@ import logging
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from tmd_layer import TMDLayer
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +59,13 @@ class NetworkBlock(nn.Module):
         self.layer = self._make_layer(
             block, in_planes, out_planes, nb_layers, stride, drop_rate, activate_before_residual)
 
+        self.tmd_layer = TMDLayer(
+            in_features = 32*32, # input feature dimension(d)
+            L_latent = 16,       # latent dimension of tmd layer
+            epsilon = 0.25       # epsilon(hyperparameter)
+        )
+
+
     def _make_layer(self, block, in_planes, out_planes, nb_layers, stride, drop_rate, activate_before_residual):
         layers = []
         for i in range(int(nb_layers)):
@@ -66,6 +74,10 @@ class NetworkBlock(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
+        n,c,h,w = x.shape()
+        x = x.view(1,n,-1)
+        x = self.tmd_layer(x)
+        x = x.view(n,c,h,w)
         return self.layer(x)
 
 
@@ -79,7 +91,6 @@ class WideResNet(nn.Module):
         # 1st conv before any network block
         self.conv1 = nn.Conv2d(3, channels[0], kernel_size=3, stride=1,
                                padding=1, bias=False)
-        # 1st block
         self.block1 = NetworkBlock(
             n, channels[0], channels[1], block, 1, drop_rate, activate_before_residual=True)
         # 2nd block
