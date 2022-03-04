@@ -74,6 +74,7 @@ class NetworkBlock(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
+        print(x.shape)
         n,c,h,w = x.shape
         x = x.view(1,n,-1)
         x = self.tmd_layer(x)
