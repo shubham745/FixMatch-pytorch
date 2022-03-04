@@ -128,11 +128,12 @@ class WideResNet(nn.Module):
                 nn.init.constant_(m.bias, 0.0)
 
     def forward(self, x):
-        n,c,h,w = out.shape
-        out = self.conv1(x)
-        out = out.view(1,n,-1)
-        out = self.tmd_layer(out)
+        n,c,h,w = x.shape
+        x = x.view(1,n,-1)
+        out = self.tmd_layer(x)
         out = out.view(n,c,h,w)
+        out = self.conv1(x)
+
         out = self.block1(out)
         out = self.block2(out)
         out = self.block3(out)
