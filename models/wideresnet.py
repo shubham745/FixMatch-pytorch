@@ -78,10 +78,10 @@ class NetworkBlock(nn.Module):
     def forward(self, x):
         if self.in_planes == 16:
             n,c,h,w = x.shape
-            x = x.view(1,n,-1)
+            x = x.view(2,n/2,-1)
             x = self.tmd_layer(x)
             x = x.view(n,c,h,w)
-            
+
         return self.layer(x)
 
 
