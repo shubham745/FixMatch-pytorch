@@ -76,11 +76,11 @@ class NetworkBlock(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
-        if self.in_planes == 16:
-            n,c,h,w = x.shape
-            x = x.view(2,n/2,-1)
-            x = self.tmd_layer(x)
-            x = x.view(n,c,h,w)
+        # if self.in_planes == 16:
+        #     n,c,h,w = x.shape
+        #     x = x.view(2,n//2,-1)
+        #     x = self.tmd_layer(x)
+            #x = x.view(n,c,h,w)
 
         return self.layer(x)
 
@@ -95,6 +95,12 @@ class WideResNet(nn.Module):
         # 1st conv before any network block
         self.conv1 = nn.Conv2d(3, channels[0], kernel_size=3, stride=1,
                                padding=1, bias=False)
+        self.tmd_layer = TMDLayer(
+                in_features = 32*32*3, # input feature dimension(d)
+                L_latent = 16,       # latent dimension of tmd layer
+                epsilon = 0.25       # epsilon(hyperparameter)
+            )
+
         self.block1 = NetworkBlock(
             n, channels[0], channels[1], block, 1, drop_rate, activate_before_residual=True)
         # 2nd block
@@ -123,6 +129,10 @@ class WideResNet(nn.Module):
 
     def forward(self, x):
         out = self.conv1(x)
+        n,c,h,w = out.shape
+        out = out.view(1,n,-1)
+        out = self.tmd_layer(out)
+        out = out.view(n,c,h,w)
         out = self.block1(out)
         out = self.block2(out)
         out = self.block3(out)
