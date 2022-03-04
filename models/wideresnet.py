@@ -60,7 +60,7 @@ class NetworkBlock(nn.Module):
             block, in_planes, out_planes, nb_layers, stride, drop_rate, activate_before_residual)
 
         self.tmd_layer = TMDLayer(
-            in_features = 32*32, # input feature dimension(d)
+            in_features = 32*32*in_planes, # input feature dimension(d)
             L_latent = 16,       # latent dimension of tmd layer
             epsilon = 0.25       # epsilon(hyperparameter)
         )
